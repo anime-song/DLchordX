@@ -563,7 +563,7 @@ class Chord:
         _, intervals = self.get_components()
 
         modified_bass = self.bass.modified(base_tone)
-        if self.bass.get_interval() == 6:
+        if self.bass.get_interval_from(base_tone) == 6:
             # M7ありもしくはm無し
             if 11 in intervals or 3 not in intervals:
                 modified_bass = scale[7].transpose(-1)
