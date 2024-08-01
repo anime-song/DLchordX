@@ -30,7 +30,7 @@ $ pip install dlchordx
 ## コード検索
 
 ```python
->>> from dlchordx import interval_to_chords, Tone
+>>> from dlchordx import tone_to_chords, Tone
 >>> chords = tone_to_chords([Tone("C"), Tone("E"), Tone("G")])
 >>> chords
 [<Chord : C>]
@@ -93,7 +93,7 @@ E/G#
 Db7
 ```
 
-## コード最適化
+## コード再構成
 
 ```python
 >>> from dlchordx import Chord
