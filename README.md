@@ -106,7 +106,7 @@ E/G#
 F#m7(9)
 ```
 
-## 構成音取得
+## 構成音取得(インデックス)
 
 ```python
 >>> from dlchordx import Chord
@@ -121,6 +121,17 @@ F#m7(9)
 # ベース音 2
 # 構成音 1
 # 非構成音 0
+```
+
+## 構成音取得
+
+```python
+>>> from dlchordx import Chord
+>>> chord = Chord("C")
+>>> components, intervals = chord.get_components()
+>>> print(components, intervals)
+[<Tone: C>, <Tone: E>, <Tone: G>] [0, 4, 7]
+
 ```
 
 ## コードを比較
