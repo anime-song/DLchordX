@@ -567,11 +567,12 @@ class Chord:
 
         modified_bass = self.bass.modified(base_tone)
         if self.bass.get_interval_from(base_tone) == 6:
-            # M7ありもしくはm無し
+            # M7 ありもしくは m 無し
             if 11 in intervals or 3 not in intervals:
                 modified_bass = scale[7].transpose(-1)
 
         if self.bass.get_interval_from(base_tone) == 1:
+            # m あり
             if 3 in intervals:
                 modified_bass = scale[0].transpose(1)
 
@@ -586,6 +587,11 @@ class Chord:
                 modified_bass = root_chord_components[index]
             else:
                 modified_root = modified_root.modified(modified_bass)
+
+            if self.root.get_interval_from(self.bass) == 6:
+                # #11
+                bass_scale = get_scale(modified_bass, scale=Scale.MAJOR)
+                modified_root = bass_scale[5].transpose(1)
             return Chord(modified_root.name + self.quality.name + "/" + modified_bass.name)
         else:
             return Chord(modified_bass.name + self.quality.name)
