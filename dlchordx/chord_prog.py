@@ -11,7 +11,7 @@ class ChordProg:
     def __init__(self, chord_list: List[Chord], major_key: str):
         self.chord_list = chord_list
         self.chord_nodes = self.__parse_chord_node(self.chord_list)
-        self.major_key = major_key
+        self.major_key = Tone(major_key)
 
     def __parse_chord_node(self, chord_list: List[Chord]) -> List[ChordNode]:
         nodes = []
@@ -31,8 +31,8 @@ class ChordProg:
         return nodes
 
     def modified_accidentals(self) -> List[Chord]:
-        scale = get_scale(Tone(self.major_key), Scale.MAJOR)
-        interval = Tone(self.major_key).get_interval_from(Tone("C"))
+        scale = get_scale(self.major_key, Scale.MAJOR)
+        interval = self.major_key.get_interval_from(Tone("C"))
         scale = scale[-interval:] + scale[:-interval]
 
         result_chords = []
@@ -45,6 +45,10 @@ class ChordProg:
                 # 下行の場合
                 if node.next_chord and node.next_chord.bass.get_interval_from(node.chord.bass) == 11:
                     chord = node.chord.transpose(1).modified_accidentals(self.major_key).transpose(-1)
+
+            if node.chord.bass.get_interval_from(self.major_key) == 6:
+                if node.prev_chord.quality.exists("m") and node.prev_chord.bass.get_interval_from(self.major_key) == 1:
+                    chord = node.chord.transpose(-1).modified_accidentals(self.major_key).transpose(1)
 
             result_chords.append(chord)
         return result_chords

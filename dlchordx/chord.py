@@ -571,6 +571,10 @@ class Chord:
             if 11 in intervals or 3 not in intervals:
                 modified_bass = scale[7].transpose(-1)
 
+        if self.bass.get_interval_from(base_tone) == 1:
+            if 3 in intervals:
+                modified_bass = scale[0].transpose(1)
+
         if self.is_on_chord:
             modified_root = self.root.modified(base_tone)
             root_chord = Chord(modified_root.name + self.quality.name)
