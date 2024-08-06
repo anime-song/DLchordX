@@ -513,7 +513,10 @@ class Chord:
 
         if self.is_on_chord:
             components = [self.bass,] + list(components)
-            components_interval = [0,] + [self.bass.get_interval() + interval for interval in list(components_interval)]
+            components_interval = [0,] + [
+                interval - self.bass.get_interval() if self.bass.get_interval() < interval
+                else self.bass.get_interval() - interval
+                for interval in list(components_interval)]
         return list(components), list(components_interval)
 
     def get_notes(self, sparse=False) -> List[Tone]:
@@ -579,7 +582,6 @@ class Chord:
                 modified_bass = root_chord_components[index]
             else:
                 modified_root = modified_root.modified(modified_bass)
-
             return Chord(modified_root.name + self.quality.name + "/" + modified_bass.name)
         else:
             return Chord(modified_bass.name + self.quality.name)
