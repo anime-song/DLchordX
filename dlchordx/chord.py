@@ -621,7 +621,7 @@ def __chord_sort_func(chord: Chord) -> int:
         if ChordTone.create_from_name("11").to_tone(chord.root) in add_tones:
             eval_score -= 1
 
-        if "sus" in chord.quality.qualities: # 修正必要
+        if "sus" in chord.quality.name:
             eval_score -= 1
 
             if ChordTone.create_from_name("9").to_tone(chord.root) in tones:

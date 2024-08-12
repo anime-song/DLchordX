@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import sys
 
 sys.path.append("./test/")
-version = "1.0.2"
+version = "1.0.3"
 
 setup(
     name="dlchordx",
