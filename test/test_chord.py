@@ -3,7 +3,38 @@ import copy
 from dlchordx import const
 from dlchordx.chord import Chord, Tone
 
-tone_list = ["C", "B#", "Dbb", "Db", "C#", "D", "Ebb", "C##", "Eb", "D#", "E", "D##", "Fb", "F", "E#", "Gb", "F#", "G", "F##", "Abb", "Ab", "G#", "A", "G##", "Bbb", "Bb", "A#", "B", "Cb"]
+tone_list = [
+    "C",
+    "B#",
+    "Dbb",
+    "Db",
+    "C#",
+    "D",
+    "Ebb",
+    "C##",
+    "Eb",
+    "D#",
+    "E",
+    "D##",
+    "Fb",
+    "F",
+    "E#",
+    "Gb",
+    "F#",
+    "G",
+    "F##",
+    "Abb",
+    "Ab",
+    "G#",
+    "A",
+    "G##",
+    "Bbb",
+    "Bb",
+    "A#",
+    "B",
+    "Cb",
+]
+
 
 def test_root():
     for quality_name, _ in const.CHORD_MAP.items():
@@ -59,9 +90,12 @@ def test_transpose():
 
                 for i in range(1):
                     transposed_chord = chord.transpose(i)
-                    transposed_chord_name = (Tone(root_text).transpose(i).name +
-                                             quality_name + "/" +
-                                             Tone(bass_text).transpose(i).name)
+                    transposed_chord_name = (
+                        Tone(root_text).transpose(i).name
+                        + quality_name
+                        + "/"
+                        + Tone(bass_text).transpose(i).name
+                    )
                     transposed_chord_origin = Chord(transposed_chord_name)
 
                     assert transposed_chord_origin == transposed_chord
@@ -99,3 +133,13 @@ def test_reconfigured():
                 chord = Chord(chord_name)
                 rec_chord = chord.reconfigured()
                 assert chord == rec_chord
+
+
+if __name__ == "__main__":
+    test_bass()
+    test_get_notes()
+    test_is_on_chord()
+    test_quality()
+    test_reconfigured()
+    test_root()
+    test_transpose()

@@ -4,6 +4,7 @@ from dlchordx import const
 
 from typing import List
 from enum import Enum
+from functools import lru_cache
 
 simplified_sharp_scale = [
     "C",
@@ -424,31 +425,34 @@ def get_scale(base_tone: Tone, scale: Scale) -> List[Tone]:
     return modified_scales
 
 
+_CHORD_TONE_MAP = {chord_tone.name: chord_tone for chord_tone in chord_tone_list}
+
+
+@lru_cache(maxsize=None)
 def to_chord_tone(text: str) -> ChordTone:
-    for chord_tone in chord_tone_list:
-        if chord_tone.name == text.replace("-", "b").replace("+", "#").replace(
-            "add", ""
-        ):
-            return chord_tone
-    return None
+    return _CHORD_TONE_MAP.get(
+        text.replace("-", "b").replace("+", "#").replace("add", "")
+    )
 
 
+_BASE_QUALITY_MAP = {
+    "m": chord_base_quality_list[ChordBaseQualityType.MINOR],
+    "aug": chord_base_quality_list[ChordBaseQualityType.AUGMENTED],
+    "dim": chord_base_quality_list[ChordBaseQualityType.DIMINISHED],
+}
+
+
+@lru_cache(maxsize=None)
 def to_base_quality(text: str) -> ChordBaseQuality:
-    if text == "m":
-        return chord_base_quality_list[ChordBaseQualityType.MINOR]
-    elif text == "aug":
-        return chord_base_quality_list[ChordBaseQualityType.AUGMENTED]
-    elif text == "dim":
-        return chord_base_quality_list[ChordBaseQualityType.DIMINISHED]
-
-    return None
+    return _BASE_QUALITY_MAP.get(text)
 
 
 class Quality:
+    _parser = QualityParser()
+
     def __init__(self, quality_text: str):
         self.__name = quality_text
-        parser = QualityParser()
-        self.__quality_data = parser.parse(quality_text)
+        self.__quality_data = Quality._parser.parse(quality_text)
 
         self.__tones = [to_chord_tone(tone) for tone in self.__quality_data.tones]
         self.__tones_parentheses = [

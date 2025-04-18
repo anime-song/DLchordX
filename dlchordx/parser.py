@@ -1,6 +1,7 @@
 import re
 from typing import List
 
+
 class ChordParseData(object):
     def __init__(self, root_text, bass_text, quality_text):
         self.__root_text = root_text
@@ -20,35 +21,23 @@ class ChordParseData(object):
         return self.__quality_text
 
 
-class ChordParser(object):
+class ChordParser:
     """
     コードをルート、クオリティ、ベースに分解するクラス。
     """
 
+    _RE = re.compile(r"^([A-G])([#b]*)([^/]*)(?:/([A-G][#b]*))?$")
+
     def parse(self, chord_text: str) -> ChordParseData:
-        split_text = chord_text.split("/")
-        root_text = chord_text[0]
-        bass_text = ""
-        accidentals_text = ""
-
-        if len(split_text) > 1:
-            bass_text = split_text[1]
-
-        res = split_text[0][1:]
-        for i in range(len(res)):
-            if res[i] != "#" and res[i] != "b":
-                break
-            accidentals_text += res[i]
-
-        root_text += accidentals_text
-        quality_text = res[len(accidentals_text):]
-
+        m = self._RE.match(chord_text)
+        if not m:
+            raise ValueError(f"Invalid chord: {chord_text}")
+        root_char, accidentals, quality, bass = m.groups()
+        root = root_char + accidentals
         # ベースがない場合はルート音がベースになります
-        if bass_text == "":
-            bass_text = root_text
-
-        return ChordParseData(root_text, bass_text, quality_text)
-
+        if bass is None:
+            bass = root
+        return ChordParseData(root, bass, quality)
 
 
 class QualityParseData(object):
@@ -87,7 +76,26 @@ class QualityParseData(object):
 
 class QualityParser(object):
     def __init__(self) -> None:
-        self.__tone_list = ["5", "6", "-5", "b5", "+5", "#5", "-9", "b9", "9", "+9", "#9", "+11", "#11", "11", "-13", "b13", "13"]
+        self.__tone_list = [
+            "5",
+            "6",
+            "-5",
+            "b5",
+            "+5",
+            "#5",
+            "-9",
+            "b9",
+            "9",
+            "+9",
+            "#9",
+            "+11",
+            "#11",
+            "11",
+            "-13",
+            "b13",
+            "13",
+        ]
+
     """
     コードクオリティを解析するクラス
     """
@@ -133,7 +141,9 @@ class QualityParser(object):
         tones = []
         if "add" in exclude_parentheses:
             match = re.findall(r"add9|add11|add4|add2", exclude_parentheses)
-            exclude_parentheses = re.sub(r"add9|add11|add4|add2", "", exclude_parentheses)
+            exclude_parentheses = re.sub(
+                r"add9|add11|add4|add2", "", exclude_parentheses
+            )
             for tone in match:
                 tones.append(tone)
 
@@ -143,7 +153,9 @@ class QualityParser(object):
             for tone in match:
                 tones.append(tone)
 
-        match_tones = re.findall("9|11|13|[-+b#]5|2|4|6|(?<![-+b#])5", exclude_parentheses)
+        match_tones = re.findall(
+            "9|11|13|[-+b#]5|2|4|6|(?<![-+b#])5", exclude_parentheses
+        )
 
         for tone in match_tones:
             if tone not in self.__tone_list:
@@ -202,6 +214,7 @@ class QualityParser(object):
 
         quality_data = QualityParseData(qualities, tones, tones_parentheses)
         return quality_data
+
 
 if __name__ == "__main__":
     parser = QualityParser()

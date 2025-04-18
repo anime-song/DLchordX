@@ -16,3 +16,7 @@ def test_parse():
                 assert root_tone.name == chord_data.root_text
                 assert bass_tone.name == chord_data.bass_text
                 assert quality_name == chord_data.quality_text
+
+
+if __name__ == "__main__":
+    test_parse()
