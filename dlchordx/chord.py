@@ -5,20 +5,49 @@ from dlchordx import const
 from typing import List
 from enum import Enum
 
-simplified_sharp_scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
-simplified_flat_scale = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
+simplified_sharp_scale = [
+    "C",
+    "C#",
+    "D",
+    "D#",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "G#",
+    "A",
+    "A#",
+    "B",
+]
+simplified_flat_scale = [
+    "C",
+    "Db",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "Gb",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+]
 # W W H W W W H
 major_scale_steps = [2, 2, 1, 2, 2, 2]
 minor_scale_steps = [2, 1, 2, 2, 1, 2]
+
 
 class Scale(Enum):
     MAJOR = 1
     MINOR = 2
 
+
 class AccidentalType(Enum):
     SHARP = 1
     FLAT = 2
     NONE = 3
+
 
 class Tone:
     def __init__(self, name: str):
@@ -37,15 +66,7 @@ class Tone:
         else:
             self.accidental_type = AccidentalType.NONE
 
-        self.interval_map = {
-            "C": 0,
-            "D": 2,
-            "E": 4,
-            "F": 5,
-            "G": 7,
-            "A": 9,
-            "B": 11
-        }
+        self.interval_map = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
 
     @staticmethod
     def create_from_interval(interval: int) -> Tone:
@@ -53,7 +74,11 @@ class Tone:
 
     def __eq__(self, other: Tone) -> bool:
         if not isinstance(other, Tone):
-            raise TypeError("{} オブジェクトとToneオブジェクトを比較できません。".format(type(other)))
+            raise TypeError(
+                "{} オブジェクトとToneオブジェクトを比較できません。".format(
+                    type(other)
+                )
+            )
 
         if self.get_interval() == other.get_interval():
             return True
@@ -77,7 +102,9 @@ class Tone:
         else:
             interval_change = 0
 
-        interval = (self.interval_map[self.name_without_accidentals] + interval_change) % 12
+        interval = (
+            self.interval_map[self.name_without_accidentals] + interval_change
+        ) % 12
         return interval
 
     def get_interval_from(self, other_tone: Tone) -> int:
@@ -92,7 +119,12 @@ class Tone:
 
     def simplify(self, advanced=False) -> Tone:
         if advanced:
-            if self.name == "B#" or self.name == "Cb" or self.name == "E#" or self.name == "Fb":
+            if (
+                self.name == "B#"
+                or self.name == "Cb"
+                or self.name == "E#"
+                or self.name == "Fb"
+            ):
                 return Tone(self.name)
 
         if self.accidental_type == AccidentalType.SHARP:
@@ -147,18 +179,20 @@ class Tone:
         return shift_scale[self.get_interval()]
 
 
-
 class DeleteInterval:
     THIRD = 1
     FIFTH = 2
 
+
 class ChordTone:
-    def __init__(self,
-                 name: str,
-                 base_interval: int,
-                 interval_change: int = 0,
-                 delete_interval: DeleteInterval = None,
-                 conflict_chord_tones: List[str] = []):
+    def __init__(
+        self,
+        name: str,
+        base_interval: int,
+        interval_change: int = 0,
+        delete_interval: DeleteInterval = None,
+        conflict_chord_tones: List[str] = [],
+    ):
         self.name = name
         self.base_interval = base_interval
         self.interval_change = interval_change
@@ -167,7 +201,11 @@ class ChordTone:
 
     def __eq__(self, other: ChordTone) -> bool:
         if not isinstance(other, ChordTone):
-            raise TypeError("{} オブジェクトとChordToneオブジェクトを比較できません。".format(type(other)))
+            raise TypeError(
+                "{} オブジェクトとChordToneオブジェクトを比較できません。".format(
+                    type(other)
+                )
+            )
 
         if self.name == other.name:
             return True
@@ -195,12 +233,15 @@ class ChordTone:
         return other_tone.name in self.conflict_chord_tones
 
     def to_tone(self, base_tone: Tone) -> Tone:
-        transposed_tone = base_tone.transpose(self.base_interval).modified(base_tone.name)
+        transposed_tone = base_tone.transpose(self.base_interval).modified(
+            base_tone.name
+        )
         if self.interval_change != 0:
             transposed_tone = transposed_tone.transpose(self.interval_change)
             return transposed_tone
         else:
             return transposed_tone
+
 
 class ChordBaseQualityType(Enum):
     MAJOR = 1
@@ -208,37 +249,87 @@ class ChordBaseQualityType(Enum):
     DIMINISHED = 3
     AUGMENTED = 4
 
+
 class ChordBaseQuality:
     def __init__(self, type: ChordBaseQualityType, interval_change=(0, 0, 0)):
         self.type = type
         self.interval_change = interval_change
 
+
 chord_tone_list: List[ChordTone] = [
-    ChordTone("sus2", base_interval=2,  interval_change=0,  delete_interval=DeleteInterval.THIRD, conflict_chord_tones=["9"]),
-    ChordTone("2",    base_interval=2,  interval_change=0,  conflict_chord_tones=["9"]),
-    ChordTone("sus4", base_interval=5,  interval_change=0,  delete_interval=DeleteInterval.THIRD, conflict_chord_tones=["11"]),
-    ChordTone("4",    base_interval=5,  interval_change=0,  conflict_chord_tones=["11"]),
-    ChordTone("b5",   base_interval=7,  interval_change=-1, delete_interval=DeleteInterval.FIFTH, conflict_chord_tones=["5", "#11"]),
-    ChordTone("5",    base_interval=7,  interval_change=0,  delete_interval=DeleteInterval.THIRD, conflict_chord_tones=["b5", "#11"]),
-    ChordTone("#5",   base_interval=7,  interval_change=+1, delete_interval=DeleteInterval.FIFTH, conflict_chord_tones=["5", "b13"]),
-    ChordTone("6",    base_interval=9,  interval_change=0,  conflict_chord_tones=["13", "b13", "#5"]),
-    ChordTone("7",    base_interval=11, interval_change=-1, conflict_chord_tones=["M7"]),
-    ChordTone("M7",   base_interval=11, interval_change=0,  conflict_chord_tones=["7"]),
-    ChordTone("b9",   base_interval=14, interval_change=-1, conflict_chord_tones=["9"]),
-    ChordTone("9",    base_interval=14, interval_change=0,  conflict_chord_tones=["b9", "#9"]),
-    ChordTone("#9",   base_interval=14, interval_change=+1, conflict_chord_tones=["9"]),
-    ChordTone("11",   base_interval=17, interval_change=0,  conflict_chord_tones=["#11"]),
-    ChordTone("#11",  base_interval=17, interval_change=+1, conflict_chord_tones=["11"]),
-    ChordTone("13",   base_interval=21, interval_change=0,  conflict_chord_tones=["b13", "#5"]),
-    ChordTone("b13",  base_interval=21, interval_change=-1, conflict_chord_tones=["13"]),
+    ChordTone(
+        "sus2",
+        base_interval=2,
+        interval_change=0,
+        delete_interval=DeleteInterval.THIRD,
+        conflict_chord_tones=["9"],
+    ),
+    ChordTone("2", base_interval=2, interval_change=0, conflict_chord_tones=["9"]),
+    ChordTone(
+        "sus4",
+        base_interval=5,
+        interval_change=0,
+        delete_interval=DeleteInterval.THIRD,
+        conflict_chord_tones=["11"],
+    ),
+    ChordTone("4", base_interval=5, interval_change=0, conflict_chord_tones=["11"]),
+    ChordTone(
+        "b5",
+        base_interval=7,
+        interval_change=-1,
+        delete_interval=DeleteInterval.FIFTH,
+        conflict_chord_tones=["5", "#11"],
+    ),
+    ChordTone(
+        "5",
+        base_interval=7,
+        interval_change=0,
+        delete_interval=DeleteInterval.THIRD,
+        conflict_chord_tones=["b5", "#11"],
+    ),
+    ChordTone(
+        "#5",
+        base_interval=7,
+        interval_change=+1,
+        delete_interval=DeleteInterval.FIFTH,
+        conflict_chord_tones=["5", "b13"],
+    ),
+    ChordTone(
+        "6",
+        base_interval=9,
+        interval_change=0,
+        conflict_chord_tones=["13", "b13", "#5"],
+    ),
+    ChordTone("7", base_interval=11, interval_change=-1, conflict_chord_tones=["M7"]),
+    ChordTone("M7", base_interval=11, interval_change=0, conflict_chord_tones=["7"]),
+    ChordTone("b9", base_interval=14, interval_change=-1, conflict_chord_tones=["9"]),
+    ChordTone(
+        "9", base_interval=14, interval_change=0, conflict_chord_tones=["b9", "#9"]
+    ),
+    ChordTone("#9", base_interval=14, interval_change=+1, conflict_chord_tones=["9"]),
+    ChordTone("11", base_interval=17, interval_change=0, conflict_chord_tones=["#11"]),
+    ChordTone("#11", base_interval=17, interval_change=+1, conflict_chord_tones=["11"]),
+    ChordTone(
+        "13", base_interval=21, interval_change=0, conflict_chord_tones=["b13", "#5"]
+    ),
+    ChordTone("b13", base_interval=21, interval_change=-1, conflict_chord_tones=["13"]),
 ]
 
 chord_base_quality_list = {
-    ChordBaseQualityType.MAJOR: ChordBaseQuality(ChordBaseQualityType.MAJOR, interval_change=(0, 0, 0)),
-    ChordBaseQualityType.MINOR: ChordBaseQuality(ChordBaseQualityType.MINOR, interval_change=(0, -1, 0)),
-    ChordBaseQualityType.AUGMENTED:ChordBaseQuality(ChordBaseQualityType.AUGMENTED, interval_change=(0, 0, +1)),
-    ChordBaseQualityType.DIMINISHED:ChordBaseQuality(ChordBaseQualityType.DIMINISHED, interval_change=(0, -1, -1)),
+    ChordBaseQualityType.MAJOR: ChordBaseQuality(
+        ChordBaseQualityType.MAJOR, interval_change=(0, 0, 0)
+    ),
+    ChordBaseQualityType.MINOR: ChordBaseQuality(
+        ChordBaseQualityType.MINOR, interval_change=(0, -1, 0)
+    ),
+    ChordBaseQualityType.AUGMENTED: ChordBaseQuality(
+        ChordBaseQualityType.AUGMENTED, interval_change=(0, 0, +1)
+    ),
+    ChordBaseQualityType.DIMINISHED: ChordBaseQuality(
+        ChordBaseQualityType.DIMINISHED, interval_change=(0, -1, -1)
+    ),
 }
+
 
 def get_scale(base_tone: Tone, scale: Scale) -> List[Tone]:
     if scale == Scale.MAJOR:
@@ -253,7 +344,6 @@ def get_scale(base_tone: Tone, scale: Scale) -> List[Tone]:
     elif base_tone.accidental_type == AccidentalType.FLAT:
         base_scale = get_scale(Tone(base_tone.name_without_accidentals), scale=scale)
         return [tone.transpose(-base_tone.name.count("b")) for tone in base_scale]
-
 
     scales: List[Tone] = []
     current_tone = base_tone
@@ -278,7 +368,9 @@ def get_scale(base_tone: Tone, scale: Scale) -> List[Tone]:
                 sharp_scale_tone = tone.to_sharp_scale()
                 if tone_name_list.count(flat_scale_tone.name_without_accidentals) == 0:
                     tone = flat_scale_tone
-                elif tone_name_list.count(sharp_scale_tone.name_without_accidentals) == 0:
+                elif (
+                    tone_name_list.count(sharp_scale_tone.name_without_accidentals) == 0
+                ):
                     tone = sharp_scale_tone
 
         result_scales.append(tone)
@@ -286,7 +378,10 @@ def get_scale(base_tone: Tone, scale: Scale) -> List[Tone]:
     # 半音の音を追加
     indexes = [tone.get_interval() for tone in result_scales]
     indexes_roll = indexes[1:] + indexes[:1]
-    index_intervals = [min(12 - abs(idx1 - idx2), abs(idx1 - idx2)) for idx1, idx2 in zip(indexes, indexes_roll)]
+    index_intervals = [
+        min(12 - abs(idx1 - idx2), abs(idx1 - idx2))
+        for idx1, idx2 in zip(indexes, indexes_roll)
+    ]
 
     semi_tone_changes = {
         1: AccidentalType.FLAT,
@@ -314,7 +409,10 @@ def get_scale(base_tone: Tone, scale: Scale) -> List[Tone]:
                 semi_tone = semi_tone.simplify()
 
             result_scales.append(semi_tone)
-    result_scales = sorted(result_scales, key=lambda x: (x.get_interval() - result_scales[0].get_interval()) % 12)
+    result_scales = sorted(
+        result_scales,
+        key=lambda x: (x.get_interval() - result_scales[0].get_interval()) % 12,
+    )
     modified_scales = [result_scales[0]]
     for i, tone in enumerate(result_scales[1:]):
         high_tone = Tone(tone.name_without_accidentals)
@@ -325,11 +423,15 @@ def get_scale(base_tone: Tone, scale: Scale) -> List[Tone]:
             modified_scales.append(tone)
     return modified_scales
 
+
 def to_chord_tone(text: str) -> ChordTone:
     for chord_tone in chord_tone_list:
-        if chord_tone.name == text.replace("-", "b").replace("+", "#").replace("add", ""):
+        if chord_tone.name == text.replace("-", "b").replace("+", "#").replace(
+            "add", ""
+        ):
             return chord_tone
     return None
+
 
 def to_base_quality(text: str) -> ChordBaseQuality:
     if text == "m":
@@ -348,14 +450,20 @@ class Quality:
         parser = QualityParser()
         self.__quality_data = parser.parse(quality_text)
 
-        self.__tones = [to_chord_tone(tone)
-                        for tone in self.__quality_data.tones]
-        self.__tones_parentheses = [to_chord_tone(tone)
-                                    for tone in self.__quality_data.tones_parentheses]
-        self.__add_tones = [to_chord_tone(tone) for tone in self.__quality_data.tones if "add" in tone]
-        self.__base_qualities = [to_base_quality(quality) for quality in self.__quality_data.qualities]
+        self.__tones = [to_chord_tone(tone) for tone in self.__quality_data.tones]
+        self.__tones_parentheses = [
+            to_chord_tone(tone) for tone in self.__quality_data.tones_parentheses
+        ]
+        self.__add_tones = [
+            to_chord_tone(tone) for tone in self.__quality_data.tones if "add" in tone
+        ]
+        self.__base_qualities = [
+            to_base_quality(quality) for quality in self.__quality_data.qualities
+        ]
         if not self.__base_qualities:
-            self.__base_qualities.append(chord_base_quality_list[ChordBaseQualityType.MAJOR])
+            self.__base_qualities.append(
+                chord_base_quality_list[ChordBaseQualityType.MAJOR]
+            )
 
     def __str__(self) -> str:
         return self.__name
@@ -365,7 +473,11 @@ class Quality:
 
     def __eq__(self, other: Quality) -> bool:
         if not isinstance(other, Quality):
-            raise TypeError("{} オブジェクトとQualityオブジェクトを比較できません".format(type(other)))
+            raise TypeError(
+                "{} オブジェクトとQualityオブジェクトを比較できません".format(
+                    type(other)
+                )
+            )
         return self.name == other.name
 
     def __ne__(self, other: Quality) -> bool:
@@ -432,7 +544,9 @@ class Chord:
 
     def __eq__(self, other: Chord) -> bool:
         if not isinstance(other, Chord):
-            raise TypeError("{} オブジェクトとChordオブジェクトを比較できません".format(type(other)))
+            raise TypeError(
+                "{} オブジェクトとChordオブジェクトを比較できません".format(type(other))
+            )
 
         note_indexes = {note for note in self.get_notes()}
         other_note_indexes = {note for note in self.get_notes()}
@@ -473,7 +587,11 @@ class Chord:
         """
         構成音を取得します。
         """
-        components = [self.root, self.root.transpose(4).modified(self.root), self.root.transpose(7).modified(self.root)]
+        components = [
+            self.root,
+            self.root.transpose(4).modified(self.root),
+            self.root.transpose(7).modified(self.root),
+        ]
         components_interval = [tone.get_interval_from(self.root) for tone in components]
 
         chord_tones = self.quality.tones + self.quality.parent_tones
@@ -483,15 +601,20 @@ class Chord:
             components_interval.append(tone.base_interval + tone.interval_change)
 
             if tone.delete_interval:
-                if tone.delete_interval == DeleteInterval.THIRD and 4 in components_interval:
+                if (
+                    tone.delete_interval == DeleteInterval.THIRD
+                    and 4 in components_interval
+                ):
                     index = components_interval.index(4)
                     components.pop(index)
                     components_interval.pop(index)
-                elif tone.delete_interval == DeleteInterval.FIFTH and 7 in components_interval:
+                elif (
+                    tone.delete_interval == DeleteInterval.FIFTH
+                    and 7 in components_interval
+                ):
                     index = components_interval.index(7)
                     components.pop(index)
                     components_interval.pop(index)
-
 
         for base_quality in self.quality.qualities:
             interval_change = base_quality.interval_change
@@ -499,24 +622,39 @@ class Chord:
             if 4 in components_interval:
                 index = components_interval.index(4)
                 components[index] = components[index].transpose(interval_change[1])
-                components_interval[index] = components_interval[index] + interval_change[1]
+                components_interval[index] = (
+                    components_interval[index] + interval_change[1]
+                )
             if 7 in components_interval:
                 index = components_interval.index(7)
                 components[index] = components[index].transpose(interval_change[2])
-                components_interval[index] = components_interval[index] + interval_change[2]
-            if base_quality.type == ChordBaseQualityType.DIMINISHED and 10 in components_interval:
+                components_interval[index] = (
+                    components_interval[index] + interval_change[2]
+                )
+            if (
+                base_quality.type == ChordBaseQualityType.DIMINISHED
+                and 10 in components_interval
+            ):
                 index = components_interval.index(10)
                 components[index] = components[index].transpose(-1)
                 components_interval[index] = components_interval[index] - 1
 
-        components, components_interval = zip(*sorted(zip(components, components_interval), key=lambda x: x[1]))
+        components, components_interval = zip(
+            *sorted(zip(components, components_interval), key=lambda x: x[1])
+        )
 
         if self.is_on_chord:
-            components = [self.bass,] + list(components)
-            components_interval = [0,] + [
-                interval - self.bass.get_interval() if self.bass.get_interval() < interval
+            components = [
+                self.bass,
+            ] + list(components)
+            components_interval = [
+                0,
+            ] + [
+                interval - self.bass.get_interval()
+                if self.bass.get_interval() < interval
                 else self.bass.get_interval() - interval
-                for interval in list(components_interval)]
+                for interval in list(components_interval)
+            ]
         return list(components), list(components_interval)
 
     def get_notes(self, sparse=False) -> List[Tone]:
@@ -546,12 +684,14 @@ class Chord:
         転調したコードを返します
         """
         if self.is_on_chord:
-            return Chord(self.root.transpose(steps).name +
-                         self.quality.name +
-                         "/" + self.bass.transpose(steps).name)
+            return Chord(
+                self.root.transpose(steps).name
+                + self.quality.name
+                + "/"
+                + self.bass.transpose(steps).name
+            )
         else:
-            return Chord(self.root.transpose(steps).name +
-                         self.quality.name)
+            return Chord(self.root.transpose(steps).name + self.quality.name)
 
     def modified_accidentals(self, major_key: str | Tone) -> Chord:
         """
@@ -580,7 +720,9 @@ class Chord:
             modified_root = self.root.modified(base_tone)
             root_chord = Chord(modified_root.name + self.quality.name)
             root_chord_components, _ = root_chord.get_components()
-            root_chord_intervals = [tone.get_interval() for tone in root_chord_components]
+            root_chord_intervals = [
+                tone.get_interval() for tone in root_chord_components
+            ]
             # ルートコードにベースが含まれる場合、ルートコードの構成音を利用する
             if modified_bass.get_interval() in root_chord_intervals:
                 index = root_chord_intervals.index(modified_bass.get_interval())
@@ -592,10 +734,11 @@ class Chord:
                 # #11
                 bass_scale = get_scale(modified_bass, scale=Scale.MAJOR)
                 modified_root = bass_scale[5].transpose(1)
-            return Chord(modified_root.name + self.quality.name + "/" + modified_bass.name)
+            return Chord(
+                modified_root.name + self.quality.name + "/" + modified_bass.name
+            )
         else:
             return Chord(modified_bass.name + self.quality.name)
-
 
     def reconfigured(self) -> Chord:
         """
@@ -614,7 +757,11 @@ def __chord_sort_func(chord: Chord) -> int:
     if relative_bass in add_tones:
         eval_score -= 1
 
-    tones = [tone.to_tone(chord.root) for tone in chord.quality.tones + chord.quality.parent_tones]
+    tones = [
+        tone.to_tone(chord.root)
+        for tone in chord.quality.tones + chord.quality.parent_tones
+    ]
+    # オンコード
     if chord.is_on_chord:
         eval_score -= 1
 
@@ -624,6 +771,7 @@ def __chord_sort_func(chord: Chord) -> int:
         if "sus" in chord.quality.name:
             eval_score -= 1
 
+            # sus2なら
             if ChordTone.create_from_name("9").to_tone(chord.root) in tones:
                 eval_score -= 1
 
@@ -644,7 +792,9 @@ def __chord_sort_func(chord: Chord) -> int:
     return eval_score
 
 
-def __match_quality(notes: List[int], omit_five_note: bool=False, omit_third_note: bool=False) -> List[str]:
+def __match_quality(
+    notes: List[int], omit_five_note: bool = False, omit_third_note: bool = False
+) -> List[str]:
     """
     ノートのリストから一致するクオリティを検索します。
     """
@@ -684,10 +834,14 @@ def __match_quality(notes: List[int], omit_five_note: bool=False, omit_third_not
 
     return False, ""
 
+
 def tone_to_chords(tones: List[Tone]) -> List[Chord]:
     return interval_to_chords([tone.get_interval() for tone in tones])
 
-def interval_to_chords(intervals: List[int], sort_func=__chord_sort_func) -> List[Chord]:
+
+def interval_to_chords(
+    intervals: List[int], sort_func=__chord_sort_func
+) -> List[Chord]:
     """
     ノーツリストから該当するコードの候補のリストを取得します。
     """
@@ -707,9 +861,15 @@ def interval_to_chords(intervals: List[int], sort_func=__chord_sort_func) -> Lis
 
             on_chord = ""
             if bass_note != root_note:
-                on_chord = "/" + Tone.create_from_interval(bass_note).to_flat_scale().name
+                on_chord = (
+                    "/" + Tone.create_from_interval(bass_note).to_flat_scale().name
+                )
 
-            chord = Chord(Tone.create_from_interval(root_note).to_flat_scale().name + quality + on_chord)
+            chord = Chord(
+                Tone.create_from_interval(root_note).to_flat_scale().name
+                + quality
+                + on_chord
+            )
             chord_list.append(chord)
 
         note = shifted_notes.pop(0)
@@ -724,9 +884,15 @@ def interval_to_chords(intervals: List[int], sort_func=__chord_sort_func) -> Lis
 
             on_chord = ""
             if bass_note != root_note:
-                on_chord = "/" + Tone.create_from_interval(bass_note).to_flat_scale().name
+                on_chord = (
+                    "/" + Tone.create_from_interval(bass_note).to_flat_scale().name
+                )
 
-            chord = Chord(Tone.create_from_interval(root_note).to_flat_scale().name + quality + on_chord)
+            chord = Chord(
+                Tone.create_from_interval(root_note).to_flat_scale().name
+                + quality
+                + on_chord
+            )
             chord_list.append(chord)
 
         note = shifted_notes.pop(0)
@@ -735,7 +901,8 @@ def interval_to_chords(intervals: List[int], sort_func=__chord_sort_func) -> Lis
     chord_list = sorted(chord_list, key=sort_func, reverse=True)
     return chord_list
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     scale = get_scale(base_tone=Tone("C"), scale=Scale.MINOR)
     for s in scale:
         print(s)
